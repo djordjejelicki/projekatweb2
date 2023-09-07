@@ -1,0 +1,18 @@
+.Button{
+    height: 30px;
+    width: 120px;
+    background-color: rgb(2, 170, 10);
+    color: white;
+    border: none;
+    border-radius: 15px;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 15px;
+    transition: background-color 0.5s;
+    margin-left: 8px;
+    margin-right: 8px;
+    cursor: pointer;
+}
+
+.Button:hover{
+    background-color: rgb(2, 88, 38);
+}

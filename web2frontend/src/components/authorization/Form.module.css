@@ -1,0 +1,36 @@
+.form{
+    width: 90%;
+    max-width: 40rem;
+    margin: 3rem auto;
+    padding: 2rem;
+    
+}
+
+.login-title,
+.signin-title{
+    color: rgb(2, 170, 10);
+    font-family: Arial, Helvetica, sans-serif;
+    font-weight: bold;
+    font-size: 25px;
+}
+
+.radio-button{
+    color: rgb(2, 170, 10);
+
+}
+
+.actions {
+    text-align: center;
+  }
+  
+  .googleBtn{
+    border-radius: 50px;
+  }
+  
+  @media (min-width: 768px) {
+    .control {
+      align-items: center;
+      flex-direction: row;
+    }
+  
+  }
