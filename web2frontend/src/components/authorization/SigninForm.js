@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Button from "../UI/Button/Button";
 import Input from "../UI/Input/Input";
 import classes from "./Form.module.css";
@@ -22,6 +22,10 @@ const SigninForm = props => {
     const [passwordRepeatIsValid, setRepeatPasswordIsValid] = useState();
     const [formIsValid, setFormIsValid] = useState(false);
 
+    useEffect(() =>{
+        const identifier = setTimeout(() => {setFormIsValid(emailIsValid && passwordIsValid && passwordRepeatIsValid);},500);
+        return () => {clearTimeout(identifier);};
+    },[emailIsValid,passwordIsValid,passwordRepeatIsValid]);
 
     const emailChangeHandler = event => {
         setEnteredEmail(event.target.value);

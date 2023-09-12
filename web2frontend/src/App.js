@@ -2,6 +2,7 @@ import { Fragment, useState } from "react";
 import Header from "./components/Layout/Header";
 import SigninForm from "./components/authorization/SigninForm";
 import LoginForm from "./components/authorization/LoginForm";
+import { AuthContextProvider } from "./Contexts/auth-context";
 
 function App() {
 
@@ -25,11 +26,13 @@ function App() {
   };
 
   return (
-    <Fragment>
-      {SignInForm && <SigninForm onClose={hideSignInFormHandler}/>}
-      {LogInForm && <LoginForm onClose={hideLogInFormHandler}/>}
-      <Header onSignIn = {showSignInFormHandler} onLogIn={showLogInFormHandler}/>
-    </Fragment>
+    <AuthContextProvider>
+      <Fragment>
+        {SignInForm && <SigninForm onClose={hideSignInFormHandler}/>}
+        {LogInForm && <LoginForm onClose={hideLogInFormHandler}/>}
+        <Header onSignIn = {showSignInFormHandler} onLogIn={showLogInFormHandler}/>
+      </Fragment>
+    </AuthContextProvider>
   );
 }
 

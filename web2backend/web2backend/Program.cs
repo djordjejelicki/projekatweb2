@@ -1,6 +1,21 @@
+using BLL.Services.Implementations;
+using BLL.Services.Interfaces;
+using DAL.Context;
+using DAL.Repository;
+using DAL.Repository.IRepository;
+using Microsoft.EntityFrameworkCore;
+using Shared.Common;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+
+builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+builder.Services.Configure<EmailConfiguration>(builder.Configuration.GetSection("EmailSettings"));
+builder.Services.AddTransient<IEmailService, EmailService>();
+builder.Services.AddTransient<IUserService, UserService>();
+builder.Services.AddTransient<IUnitOfWork, UnitOfWork>();
+
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
