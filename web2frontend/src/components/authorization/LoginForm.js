@@ -23,10 +23,12 @@ const emailReducer = (state, action) => {
 const passwordReducer = (state, action) => {
 
     if(action.type === "USER_INPUT"){
+        
         return {value: action.val, isValid: action.val.trim().lenght > 6};
     }
 
     if(action.type === "INPUT_BLUR"){
+       
         return {value: state.value, isValid: state.value.trim().lenght > 6};
     }
 
@@ -50,11 +52,12 @@ const LoginForm = props => {
 
     useEffect(() => {
         const identifier = setTimeout(() => {setFormIsValid(emailIsValid && passwordIsValid)},500);
+        
         return (() => {clearTimeout(identifier)});
     },[emailIsValid,passwordIsValid]);
 
     useEffect(() => {
-        const button = document.getElementById("Login");
+        const button = document.getElementById("login");
         button.disabled = false;
         button.textContent = "Login";
     },[]);
@@ -80,7 +83,7 @@ const LoginForm = props => {
         const button = document.getElementById('login');
         button.textContent = "Logging in";
         button.disabled = true;
-        if(formIsValid){
+       
             try{
                 const response = await axios.post(process.env.REACT_APP_SERVER_URL + "users/login",{
                     Email: event.target.email.value,
@@ -96,13 +99,7 @@ const LoginForm = props => {
                 button.textContent = "Login";
                 button.disabled = false;
             }
-        }
-        else if(!emailIsValid){
-            emailInputRef.current.focus();
-        }
-        else {
-            passwordInputRef.current.focus();
-        }
+   
     };
 
     return(

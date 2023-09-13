@@ -9,10 +9,10 @@ namespace web2backend.Controllers
 {
     [Route("api/users")]
     [ApiController]
-    public class UserController : Controller
+    public class UserController : ControllerBase
     {
         public readonly IUserService _userService;
-        public UserController(IUserService userService)
+        public UserController(IUserService userService) 
         {
             _userService = userService;
         }
@@ -22,7 +22,20 @@ namespace web2backend.Controllers
         {
             if (ModelState.IsValid)
             {
-                ResponsePackage<ProfileDTO> = _userService.
+                ResponsePackage<ProfileDTO> response = _userService.LoginUser(loginDTO);
+
+                if (response.Status == ResponseStatus.OK)
+                {
+                    return Ok(response.Data);
+                }
+                else
+                {
+                    return Problem(response.Message, statusCode: (int)response.Status);
+                }
+            }
+            else
+            {
+                return Problem("Entered values not valid", statusCode: (int)ResponseStatus.BadRequest);
             }
         }
 
@@ -126,9 +139,6 @@ namespace web2backend.Controllers
             return Problem("Entered values not valid", statusCode: (int)ResponseStatus.BadRequest);
         }
 
-        public IActionResult Index()
-        {
-            return View();
-        }
+ 
     }
 }

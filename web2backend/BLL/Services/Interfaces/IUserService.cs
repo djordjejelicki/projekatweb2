@@ -12,5 +12,6 @@ namespace BLL.Services.Interfaces
     public interface IUserService
     {
         Task<ResponsePackage<bool>> SigninUser(UserDTO userDTO,SD.Roles role, string file);
+        ResponsePackage<ProfileDTO> LoginUser(LoginDTO loginDTO);
     }
 }
