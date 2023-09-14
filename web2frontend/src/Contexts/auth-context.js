@@ -36,6 +36,7 @@ export const AuthContextProvider = props => {
         localStorage.setItem('isLoggedIn','1');
         setIsLoggedIn(true);
         setUser(user);
+        console.log(user);
     }
 
     return (

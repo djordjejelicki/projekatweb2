@@ -13,5 +13,6 @@ namespace BLL.Services.Interfaces
     {
         Task<ResponsePackage<bool>> SigninUser(UserDTO userDTO,SD.Roles role, string file);
         ResponsePackage<ProfileDTO> LoginUser(LoginDTO loginDTO);
+        ResponsePackage<ProfileDTO> UpdateProfile(UserDTO userDTO, string file);
     }
 }

@@ -3,6 +3,9 @@ import Header from "./components/Layout/Header";
 import SigninForm from "./components/authorization/SigninForm";
 import LoginForm from "./components/authorization/LoginForm";
 import { AuthContextProvider } from "./Contexts/auth-context";
+import { Route, Routes, BrowserRouter as Router } from "react-router-dom";
+import Dashboard from "./components/Dashboard/Dashboard";
+import Profileinfo from "./common/Profileinfo";
 
 function App() {
 
@@ -28,9 +31,17 @@ function App() {
   return (
     <AuthContextProvider>
       <Fragment>
-        {SignInForm && <SigninForm onClose={hideSignInFormHandler}/>}
-        {LogInForm && <LoginForm onClose={hideLogInFormHandler}/>}
-        <Header onSignIn = {showSignInFormHandler} onLogIn={showLogInFormHandler}/>
+        <Router>
+            {SignInForm && <SigninForm onClose={hideSignInFormHandler}/>}
+            {LogInForm && <LoginForm onClose={hideLogInFormHandler}/>}
+            <Header onSignIn = {showSignInFormHandler} onLogIn={showLogInFormHandler}/>
+            <main>
+              <Routes>
+                <Route path="/" exact element={<Dashboard/>}/>
+                <Route path="/profileinfo" element={<Profileinfo/>}/>
+              </Routes>             
+            </main>
+        </Router>
       </Fragment>
     </AuthContextProvider>
   );

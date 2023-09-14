@@ -139,6 +139,57 @@ namespace web2backend.Controllers
             return Problem("Entered values not valid", statusCode: (int)ResponseStatus.BadRequest);
         }
 
+        [HttpPost("updateUser")]
+        public async Task<IActionResult> UpdateUser([FromForm] UserDTO userDTO, IFormFile? file = null)
+        {
+            if(ModelState.IsValid)
+            {
+                string filePath;
+                string avatar = String.Empty;
+                if(file != null && file.Length > 0)
+                {
+                    string fileName = Guid.NewGuid().ToString() + Path.GetExtension(file.FileName);
+                    string uploadPath = "Avatars";
+                    Console.WriteLine(uploadPath);
+
+                    if (!Directory.Exists(uploadPath))
+                    {
+                        Directory.CreateDirectory(uploadPath);
+                    }
+
+                    filePath = Path.Combine(uploadPath, fileName);
+
+                    using(var stream = new FileStream(filePath, FileMode.Create))
+                    {
+                        await file.CopyToAsync(stream);
+                    }
+                }
+                else
+                {
+                    filePath = String.Empty;
+                }
+
+                var task = _userService.UpdateProfile(userDTO, filePath);
+                if(task.Status == ResponseStatus.OK)
+                {
+                    return Ok(task.Data);
+                }
+                else if(task.Status == ResponseStatus.InternalServerError)
+                {
+                    if(System.IO.File.Exists(filePath) && file != null) 
+                    {
+                        System.IO.File.Delete(filePath);
+                    }
+                    return Problem(task.Message, statusCode: ((int)task.Status));
+                }
+                else
+                {
+                    return Problem(task.Message, statusCode: ((int)task.Status));
+                }
+            }
+            return Problem("Entered values not valid", statusCode: (int)ResponseStatus.BadRequest);
+        }
+
  
     }
 }

@@ -1,5 +1,5 @@
 class User {
-    constructor(id,userName,email,firstName,lastName,birthDate,address,token,role,isVerified,avatar){
+    constructor({id,userName,email,firstName,lastName,birthDate,address,token,role,isVerified,avatar}){
         this.Id=id;
         this.UserName=userName;
         this.Email=email;
