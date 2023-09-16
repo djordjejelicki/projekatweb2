@@ -1,4 +1,5 @@
 ﻿using BLL.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Shared;
 using Shared.Common;
@@ -190,6 +191,61 @@ namespace web2backend.Controllers
             return Problem("Entered values not valid", statusCode: (int)ResponseStatus.BadRequest);
         }
 
+        [HttpPost("registerAdmin")]
+        public IActionResult RegisterAdmin(UserDTO userDTO)
+        {
+            if (ModelState.IsValid)
+            {
+                var task = _userService.RegisterAdmin(userDTO);
+                if (task.Status == ResponseStatus.OK)
+                    return Ok(task.Message);
+                else if (task.Status == ResponseStatus.InvalidEmail)
+                    ModelState.AddModelError("email", task.Message);
+                else if (task.Status == ResponseStatus.InvalidUsername)
+                    ModelState.AddModelError("username", task.Message);
+                else if (task.Status == ResponseStatus.InternalServerError)
+                    ModelState.AddModelError(String.Empty, task.Message);
+                else
+                    ModelState.AddModelError(String.Empty, task.Message);
+            }
+            return Problem();
+        }
+
+        [HttpGet("notVerified")]
+        [Authorize(Roles = "Admin")]
+        public IActionResult GetUnverified()
+        {
+            var result = _userService.GetVerified();
+            if (result.Status == ResponseStatus.AllUsersVerified)
+                return Ok(result.Message);
+            else if (result.Status == ResponseStatus.OK)
+                return Ok(result.Data);
+            else
+                return Problem(result.Message);
+        }
+
+        [HttpPost("verify")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> Verify([FromBody]VerificationDTO user)
+        {
+            var result = await _userService.VerifyUser(user);
+            if (result.Status == ResponseStatus.OK)
+                return Ok(result.Message);
+            else
+                return Problem(detail: result.Message, statusCode: (int)result.Status);
+        }
+
+        [HttpPost("deny")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> Deny([FromBody]VerificationDTO user)
+        {
+            var result = await _userService.DenyUser(user);
+            if (result.Status == ResponseStatus.OK)
+                return Ok(result.Message);
+            else
+                return Problem(detail: result.Message, statusCode: (int)result.Status);
+
+        }
  
     }
 }

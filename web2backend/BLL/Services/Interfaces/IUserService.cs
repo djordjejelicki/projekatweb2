@@ -14,5 +14,9 @@ namespace BLL.Services.Interfaces
         Task<ResponsePackage<bool>> SigninUser(UserDTO userDTO,SD.Roles role, string file);
         ResponsePackage<ProfileDTO> LoginUser(LoginDTO loginDTO);
         ResponsePackage<ProfileDTO> UpdateProfile(UserDTO userDTO, string file);
+        Task<ResponsePackage<bool>> VerifyUser(VerificationDTO verificationDTO);
+        Task<ResponsePackage<bool>> DenyUser(VerificationDTO verificationDTO);
+        ResponsePackage<List<ProfileDTO>> GetVerified();
+        ResponsePackage<bool> RegisterAdmin(UserDTO userDTO);
     }
 }

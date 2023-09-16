@@ -92,7 +92,7 @@ namespace BLL.Services.Implementations
             }
             else
             {
-                newUser.IsVerified = true;
+                newUser.IsVerified = false;
                 newUser.Role = SD.Roles.Seller;
                 emailContent = $"<p>Hi! {newUser.FirstName} {newUser.LastName} ,</p>";
                 emailContent += $"<p>Your account is succsesfully created! please wait until our administrators check and approve your profile.</p>";
@@ -221,6 +221,134 @@ namespace BLL.Services.Implementations
                 return new ResponsePackage<ProfileDTO>(null, ResponseStatus.InternalServerError, "There was an error");
             }
 
+        }
+
+        public async Task<ResponsePackage<bool>> VerifyUser(VerificationDTO verificationDTO)
+        {
+            User u = _uow.User.GetFirstOrDefault(u => u.UserName == verificationDTO.UserName);
+            if(u == null)
+            {
+                return new ResponsePackage<bool>(false, ResponseStatus.NotFound);
+            }
+            u.IsVerified = true;
+            string emailContent = $"<p>Zdravo {u.FirstName} {u.LastName},</p>";
+            emailContent += $"<p>Vas nalog je verifikovan. Zahvaljujemo vam se na strpljenju.</p>";
+
+            try
+            {
+                _uow.User.Update(u);
+                _uow.Save();
+
+                var success = await _emailService.SendMailAsync(new EmailData()
+                {
+                    To = u.Email,
+                    Content = emailContent,
+                    IsContentHtml = true,
+                    Subject = "Verifikacija naloga"
+
+                });
+
+                if (success)
+                {
+                    return new ResponsePackage<bool>(true, ResponseStatus.OK, "User verified succesfully");
+                }
+                else
+                {
+                    return new ResponsePackage<bool>(false, ResponseStatus.InternalServerError, "There was an error while veryfying user");
+                }
+            }
+            catch(Exception ex)
+            {
+                return new ResponsePackage<bool>(false, ResponseStatus.InternalServerError, ex.Message);
+            }
+        }
+
+        public async Task<ResponsePackage<bool>> DenyUser(VerificationDTO verificationDTO)
+        {
+
+            User u = _uow.User.GetFirstOrDefault(u => u.UserName == verificationDTO.UserName);
+            if (u == null)
+            {
+                return new ResponsePackage<bool>(false, ResponseStatus.NotFound);
+            }
+
+            string emailContent = $"<p>Zdravo {u.FirstName} {u.LastName},</p>";
+            emailContent += $"<p>Vas nalog je odbijen iz razloga {verificationDTO.Reason}. </p>";
+
+            try
+            {
+                _uow.User.Remove(u);
+                _uow.Save();
+
+                var success = await _emailService.SendMailAsync(new EmailData()
+                {
+                    To = u.Email,
+                    Content = emailContent,
+                    IsContentHtml = true,
+                    Subject = "Verifikacija naloga"
+                });
+
+                if (success)
+                    return new ResponsePackage<bool>(true, ResponseStatus.OK, "User denied");
+                else
+                    return new ResponsePackage<bool>(false, ResponseStatus.InternalServerError, "There was an error");
+            }
+            catch (Exception ex)
+            {
+                return new ResponsePackage<bool>(false, ResponseStatus.InternalServerError, ex.Message);
+            }
+        }
+
+        public ResponsePackage<List<ProfileDTO>> GetVerified()
+        {
+            List<User> notVerified = _uow.User.GetAll(u => !u.IsVerified).ToList();
+            if (notVerified.Count == 0)
+                return new ResponsePackage<List<ProfileDTO>>(null, ResponseStatus.AllUsersVerified, "All users are verified");
+            else
+            {
+                List<ProfileDTO> response = new List<ProfileDTO>();
+                foreach (var elem in notVerified)
+                {
+                    ProfileDTO retUser = _mapper.Map<ProfileDTO>(elem);
+                    byte[] imageBytes = System.IO.File.ReadAllBytes(elem.ProfileUrl);
+                    retUser.Avatar = Convert.ToBase64String(imageBytes);
+                    response.Add(retUser);
+                }
+                return new ResponsePackage<List<ProfileDTO>>(response, ResponseStatus.OK);
+            }
+        }
+
+        public ResponsePackage<bool> RegisterAdmin(UserDTO userDTO)
+        {
+            if (MailExists(userDTO.Email))
+            {
+                return new ResponsePackage<bool>(false, ResponseStatus.InvalidEmail, "Email already exists");
+            }
+            if (UsernameExists(userDTO.UserName))
+            {
+                return new ResponsePackage<bool>(false, ResponseStatus.InvalidUsername, "Username already exists");
+            }
+
+            User newUser = _mapper.Map<User>(userDTO);
+
+            byte[] salt = PasswordHasher.GenerateSalt();
+            newUser.Salt = salt;
+            newUser.Password = PasswordHasher.GenerateSaltedHash(Encoding.ASCII.GetBytes(userDTO.Password), salt);
+            newUser.Role = SD.Roles.Admin;
+            newUser.IsVerified = true;
+
+            newUser.ProfileUrl = Path.Combine(Directory.GetCurrentDirectory(), "Avatars");
+            newUser.ProfileUrl = Path.Combine(newUser.ProfileUrl, "avatar.svg");
+            try
+            {
+                _uow.User.Add(newUser);
+                _uow.Save();
+                return new ResponsePackage<bool>(true, ResponseStatus.OK, "User registered succesfully");
+            }
+            catch (Exception ex)
+            {
+                return new ResponsePackage<bool>(false, ResponseStatus.InternalServerError, ex.Message);
+            }
         }
     }
 }

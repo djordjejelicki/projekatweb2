@@ -6,7 +6,7 @@ import { AuthContextProvider } from "./Contexts/auth-context";
 import { Route, Routes, BrowserRouter as Router } from "react-router-dom";
 import Dashboard from "./components/Dashboard/Dashboard";
 import Profileinfo from "./common/Profileinfo";
-
+import Verification from "./common/Admin/Verification";
 function App() {
 
   const [SignInForm, setSignInForm] = useState(false);
@@ -39,6 +39,7 @@ function App() {
               <Routes>
                 <Route path="/" exact element={<Dashboard/>}/>
                 <Route path="/profileinfo" element={<Profileinfo/>}/>
+                <Route path="/verification" element={<Verification/>}/>
               </Routes>             
             </main>
         </Router>

@@ -38,6 +38,16 @@ const Header = props => {
                                    <Button>My orders</Button>
                                     
                             ) : null}
+                            {ctx.user.Role === 2 && ctx.user.IsVerified ? (
+                                <Fragment>
+                                    
+                                </Fragment>
+                            ) : null}
+                            {ctx.user.Role === 3 ? (
+                                <Link to='/verification'>
+                                    <Button>New Users</Button>
+                                </Link>
+                            ) : null}
                         </Fragment>
                     ) : (
                         <Fragment>

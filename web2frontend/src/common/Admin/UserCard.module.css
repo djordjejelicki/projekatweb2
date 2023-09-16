@@ -1,0 +1,44 @@
+.user {
+    display: flex;
+    justify-content: space-between;
+    margin: 1rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #ccc;
+    color: black;
+  }
+  
+  .user h3 {
+    margin: 0 0 0.25rem 0;
+  }
+  
+  .description {
+    font-style: italic;
+  }
+
+  .actions {
+    text-align: right;
+  }
+  
+   button{
+    font: inherit;
+    cursor: pointer;
+    background-color: rgb(2, 170, 10);
+    border: 1px solid rgb(2, 170, 10);
+    color: white;
+    padding: 0.25rem 2rem;
+    border-radius: 20px;
+    font-weight: bold;
+    margin-left: 5px;
+  }
+  
+ button:hover,
+ button:active {
+    background-color: rgb(2, 88, 38);
+    border-color: rgb(2, 88, 38);
+  }
+
+  .profilePic{
+    width: auto;
+    height: 5rem;
+    border-radius: 50%;
+  }
