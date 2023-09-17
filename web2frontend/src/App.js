@@ -7,10 +7,17 @@ import { Route, Routes, BrowserRouter as Router } from "react-router-dom";
 import Dashboard from "./components/Dashboard/Dashboard";
 import Profileinfo from "./common/Profileinfo";
 import Verification from "./common/Admin/Verification";
+import NewItem from "./common/Seller/NewItem";
+import { ItemContextProvider } from "./Contexts/item-context";
+import CartProvider from "./Contexts/CartProvider";
+import Cart from "./components/Cart/Cart";
+
+
 function App() {
 
   const [SignInForm, setSignInForm] = useState(false);
   const [LogInForm, setLogInForm] = useState(false);
+  const [Cartshown, setCart] = useState(false);
 
   const showLogInFormHandler = () => {
     setLogInForm(true);
@@ -28,22 +35,37 @@ function App() {
     setSignInForm(false);
   };
 
+  const showCartHandler = () => {
+    setCart(true);
+  }
+
+  const hideCartHandler = () => {
+    setCart(false);
+  }
+
   return (
     <AuthContextProvider>
-      <Fragment>
-        <Router>
-            {SignInForm && <SigninForm onClose={hideSignInFormHandler}/>}
-            {LogInForm && <LoginForm onClose={hideLogInFormHandler}/>}
-            <Header onSignIn = {showSignInFormHandler} onLogIn={showLogInFormHandler}/>
-            <main>
-              <Routes>
-                <Route path="/" exact element={<Dashboard/>}/>
-                <Route path="/profileinfo" element={<Profileinfo/>}/>
-                <Route path="/verification" element={<Verification/>}/>
-              </Routes>             
-            </main>
-        </Router>
-      </Fragment>
+      <ItemContextProvider>
+        <CartProvider>
+        <Fragment>
+          <Router>
+          
+              {SignInForm && <SigninForm onClose={hideSignInFormHandler}/>}
+              {LogInForm && <LoginForm onClose={hideLogInFormHandler}/>}
+              {Cartshown  &&  <Cart onClose={hideCartHandler}/>}
+              <Header onShowCart = {showCartHandler} onSignIn = {showSignInFormHandler} onLogIn={showLogInFormHandler}/>
+              <main>
+                <Routes>
+                  <Route path="/" exact element={<Dashboard/>}/>
+                  <Route path="/profileinfo" element={<Profileinfo/>}/>
+                  <Route path="/verification" element={<Verification/>}/>
+                  <Route path="/addnewitem" element={<NewItem/>}/>
+                </Routes>             
+              </main>
+          </Router>
+        </Fragment>
+        </CartProvider>
+      </ItemContextProvider>
     </AuthContextProvider>
   );
 }

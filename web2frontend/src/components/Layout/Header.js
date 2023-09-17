@@ -5,6 +5,7 @@ import Button from "../UI/Button/Button";
 
 import AuthContext from "../../Contexts/auth-context";
 import { Link, useNavigate } from "react-router-dom";
+import HeaderCartButton from "./HeaderCartButton";
 
 const Header = props => {
 
@@ -35,12 +36,14 @@ const Header = props => {
                             </Link>
                             {ctx.user.Role === 1 ? (
                                 
-                                   <Button>My orders</Button>
+                                   <HeaderCartButton onClick={props.onShowCart}/>
                                     
                             ) : null}
                             {ctx.user.Role === 2 && ctx.user.IsVerified ? (
                                 <Fragment>
-                                    
+                                    <Link to="/addnewitem">
+                                        <Button>Add Item</Button>
+                                    </Link>
                                 </Fragment>
                             ) : null}
                             {ctx.user.Role === 3 ? (

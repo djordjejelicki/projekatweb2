@@ -9,6 +9,8 @@ namespace DAL.Repository.IRepository
     public interface IUnitOfWork
     {
         IUserRepository User { get; }
+        IItemRepository Item { get; }
+        IOrderRepository Orders { get; }
         void Save();
     }
 }

@@ -12,7 +12,7 @@
     position: fixed;
     top: 5%;
     left: 5%;
-    max-height: 90%;
+    max-height: 80%;
     width: 90%;
     background-color: rgb(212, 212, 212);
     padding: 1rem;
@@ -20,7 +20,9 @@
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
     z-index: 30;
     animation: slide-down 300ms ease-out forwards;
-    overflow-y:auto
+    overflow-y:auto;
+    margin-top: 5rem;
+    margin-bottom: 1rem;
   }
   
   @media (min-width: 768px) {

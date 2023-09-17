@@ -14,6 +14,11 @@ namespace BLL.Services.Mapping
         { 
             CreateMap<User, UserDTO>().ReverseMap();
             CreateMap<User, ProfileDTO>().ForMember(x => x.Token, opt => opt.Ignore()).ForMember(x => x.Role, opt => opt.Ignore()).ForMember(x => x.Avatar, opt => opt.Ignore()).ReverseMap();
+            CreateMap<Item, ItemDTO>().ReverseMap();
+            CreateMap<Item, NewItemDTO>().ReverseMap();
+            CreateMap<OrderItem, OrderItemDTO>();
+            CreateMap<Order, OrderDTO>()
+                .ForMember(dest => dest.OrderItems, opt => opt.MapFrom(src => src.OrderItems));
         }
     }
 }
