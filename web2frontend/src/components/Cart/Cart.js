@@ -6,11 +6,14 @@ import Input from "../UI/Input/Input";
 import CartContext from "../../Contexts/cart-context";
 import AuthContext from "../../Contexts/auth-context";
 import CartItem from "./CartItem";
+import Order from "../../Models/Order";
+import { useNavigate } from "react-router-dom";
 
 const Cart = props => {
     const ctx = useContext(CartContext);
     const authCtx = useContext(AuthContext);
-    
+    const navigate = useNavigate();
+
     const [checkedOut, setCheckedOut] = useState(false);
     const [addressIsValid, SetAddressIsValid] = useState(false);
     const [cityIsValid, SetCityIsValid] = useState(false);
@@ -43,7 +46,46 @@ const Cart = props => {
     );
     
     const OrderHandler = async() => {
+      let address = document.getElementById('address');
+      let city = document.getElementById('city');
+      let zip = document.getElementById('zip');
+      let comment = document.getElementById('comment');
+      if (!addressIsValid) {
+        address.focus();
+        return;
+      }
+      if (!cityIsValid) {
+        city.focus();
+        return;
+      }
+      if (!zipsIsValid) {
+        zip.focus();
+        return;
+      }
+      const order = new Order(authCtx.user.Id,comment.value,address.value,city.value,zip.value)
+      ctx.items.forEach((item) => {
+      order.addOrderItem(item.id, item.amount);
+      });
 
+      try {
+        const response = await axios.post(process.env.REACT_APP_SERVER_URL + 'orders/newOrder', order, {
+          headers: {
+            Authorization: `Bearer ${authCtx.user.Token}`
+          }
+        });
+  
+        if (response.data)
+          console.log(response.data)
+  
+        ctx.emptyCart();
+        
+        props.onClose();
+        navigate("/myOrders");
+      }
+      catch (error) {
+        console.error(error);
+      }
+  
     };
 
     const checkoutHandler = () => {

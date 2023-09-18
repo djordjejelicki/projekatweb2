@@ -11,7 +11,11 @@ import NewItem from "./common/Seller/NewItem";
 import { ItemContextProvider } from "./Contexts/item-context";
 import CartProvider from "./Contexts/CartProvider";
 import Cart from "./components/Cart/Cart";
-
+import { OrderContextProvider } from "./Contexts/order-context";
+import MyOrders from "./common/Buyer/MyOrders";
+import NewOrders from "./common/Seller/NewOrders";
+import AllOrders from "./common/Admin/AllOrders";
+import OrderHistory from "./common/Seller/OrderHistory";
 
 function App() {
 
@@ -46,10 +50,11 @@ function App() {
   return (
     <AuthContextProvider>
       <ItemContextProvider>
-        <CartProvider>
+        <OrderContextProvider>
+
+        <CartProvider>       
         <Fragment>
-          <Router>
-          
+          <Router>          
               {SignInForm && <SigninForm onClose={hideSignInFormHandler}/>}
               {LogInForm && <LoginForm onClose={hideLogInFormHandler}/>}
               {Cartshown  &&  <Cart onClose={hideCartHandler}/>}
@@ -60,11 +65,16 @@ function App() {
                   <Route path="/profileinfo" element={<Profileinfo/>}/>
                   <Route path="/verification" element={<Verification/>}/>
                   <Route path="/addnewitem" element={<NewItem/>}/>
+                  <Route path="/myOrders" element={<MyOrders/>}/>
+                  <Route path="/newOrders" element={<NewOrders/>}/>
+                  <Route path="/allOrders" element={<AllOrders/>}/>
+                  <Route path="/orderHistory" element={<OrderHistory/>}/>
                 </Routes>             
               </main>
           </Router>
         </Fragment>
-        </CartProvider>
+        </CartProvider>       
+        </OrderContextProvider>
       </ItemContextProvider>
     </AuthContextProvider>
   );

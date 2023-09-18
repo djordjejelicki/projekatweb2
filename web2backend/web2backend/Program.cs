@@ -21,6 +21,8 @@ builder.Services.AddTransient<IEmailService, EmailService>();
 builder.Services.AddTransient<IUserService, UserService>();
 builder.Services.AddTransient<IUnitOfWork, UnitOfWork>();
 builder.Services.AddTransient<IItemService, ItemService>();
+builder.Services.AddTransient<IOrderService, OrderService>();
+builder.Services.AddSingleton<IShipmentService, ShipmentService>();
 
 
 builder.Services.AddControllers();

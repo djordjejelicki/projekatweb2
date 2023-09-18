@@ -35,21 +35,35 @@ const Header = props => {
                                 <Button>Profile infos</Button>
                             </Link>
                             {ctx.user.Role === 1 ? (
-                                
+                                <Fragment>
+                                    <Link to="/myOrders">
+                                        <Button>My orders</Button>
+                                    </Link>
                                    <HeaderCartButton onClick={props.onShowCart}/>
-                                    
+                                </Fragment>    
                             ) : null}
                             {ctx.user.Role === 2 && ctx.user.IsVerified ? (
                                 <Fragment>
                                     <Link to="/addnewitem">
                                         <Button>Add Item</Button>
                                     </Link>
+                                    <Link to="/newOrders">
+                                        <Button>New Orders</Button>
+                                    </Link>
+                                    <Link to="/orderHistory">
+                                        <Button>Order History</Button>
+                                    </Link>
                                 </Fragment>
                             ) : null}
                             {ctx.user.Role === 3 ? (
+                                <Fragment>
                                 <Link to='/verification'>
                                     <Button>New Users</Button>
                                 </Link>
+                                <Link to='/allOrders'>
+                                    <Button>All Orders</Button>
+                                </Link>
+                                </Fragment>
                             ) : null}
                         </Fragment>
                     ) : (
