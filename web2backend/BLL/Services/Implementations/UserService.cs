@@ -12,6 +12,7 @@ using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
+using System.Net.Http.Json;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
@@ -348,6 +349,194 @@ namespace BLL.Services.Implementations
             catch (Exception ex)
             {
                 return new ResponsePackage<bool>(false, ResponseStatus.InternalServerError, ex.Message);
+            }
+        }
+
+        public async Task<ResponsePackage<bool>> GoogleRegister(string accessToken, SD.Roles Role)
+        {
+            var httpClient = new HttpClient();
+            var requestUrl = $"https://www.googleapis.com/oauth2/v3/tokeninfo?id_token={accessToken}";
+            try
+            {
+                var response = await httpClient.GetAsync(requestUrl);
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    throw new Exception("Google login verification failed.");
+                }
+                var tokenInfo = await response.Content.ReadFromJsonAsync<GoogleTokenInfo>();
+
+                if (MailExists(tokenInfo.Email))
+                {
+                    return new ResponsePackage<bool>(false, ResponseStatus.InvalidEmail, "Email already exists");
+                }
+                User newUser = new User
+                {
+                    Address = " ",
+                    BirthDate = DateTime.UtcNow.AddYears(-18),
+                    UserName = "user" + Guid.NewGuid(),
+                    Email = tokenInfo.Email,
+                    FirstName = tokenInfo.GivenName,
+                    LastName = tokenInfo.FamilyName,
+                };
+                if ((tokenInfo.GivenName == null || tokenInfo.FamilyName == null) && tokenInfo.Name.Contains(' '))
+                {
+                    newUser.FirstName = tokenInfo.Name.Split(' ')[0];
+                    newUser.LastName = tokenInfo.Name.Split(' ')[1];
+                }
+                else
+                {
+                    newUser.FirstName = tokenInfo.Name;
+                    newUser.LastName = tokenInfo.Name;
+                }
+
+                byte[] salt = PasswordHasher.GenerateSalt();
+                newUser.Salt = salt;
+                newUser.Password = PasswordHasher.GenerateSaltedHash(Encoding.ASCII.GetBytes(Guid.NewGuid().ToString()), salt);
+
+                string pictureUrl = tokenInfo.Picture;
+
+                // Fetch the profile picture
+                var pictureResponse = await httpClient.GetAsync(pictureUrl);
+
+                if (pictureResponse.IsSuccessStatusCode)
+                {
+                    var pictureBytes = await pictureResponse.Content.ReadAsByteArrayAsync();
+                    string extension = GetFileExtensionFromContentType(pictureResponse.Content.Headers.ContentType?.MediaType);
+
+                    string fileName = Guid.NewGuid().ToString() + extension;
+                    string filePath = Path.Combine("Avatars\\", fileName);
+
+                    // Save the picture bytes to a file
+                    File.WriteAllBytes(filePath, pictureBytes);
+
+                    newUser.ProfileUrl = filePath;
+                }
+                else
+                {
+                    newUser.ProfileUrl = "\\Avatars\\avatar.svg";
+                }
+
+                string emailContent;
+                if (Role == SD.Roles.Buyer)
+                {
+                    newUser.IsVerified = true;
+                    newUser.Role = SD.Roles.Buyer;
+                    emailContent = $"<p>Zdravo {newUser.FirstName} {newUser.LastName},</p>";
+                    emailContent += $"<p>Vas nalog je uspešno napravljen. Zelimo vam srecnu kupovinu.</p>";
+                }
+                else
+                {
+                    newUser.Role = SD.Roles.Seller;
+                    newUser.IsVerified = false;
+                    emailContent = $"<p>Zdravo {newUser.FirstName} {newUser.LastName},</p>";
+                    emailContent += $"<p>Vas nalog je uspešno napravljen. Molimo vas da sačekate da neko od naših administratora pregleda i odobri vaš profil.</p>";
+                    emailContent += $"<p>Dobićete email obaveštenja kada nalog bude pregledan.</p>";
+                }
+
+                try
+                {
+                    var success = await _emailService.SendMailAsync(new EmailData()
+                    {
+                        To = newUser.Email,
+                        Content = emailContent,
+                        IsContentHtml = true,
+                        Subject = "Aktivacija naloga"
+                    });
+
+                    if (success)
+                    {
+                        _uow.User.Add(newUser);
+                        _uow.Save();
+                        return new ResponsePackage<bool>(true, ResponseStatus.OK, "User registered succesfully");
+                    }
+                    else
+                        return new ResponsePackage<bool>(false, ResponseStatus.InternalServerError, "There was an error while registering new user");
+                }
+                catch (Exception ex)
+                {
+                    return new ResponsePackage<bool>(false, ResponseStatus.InternalServerError, ex.Message);
+                }
+            }
+            catch (Exception ex)
+            {
+                return new ResponsePackage<bool>(false, ResponseStatus.InternalServerError, ex.Message);
+            }
+        }
+
+        public async Task<ResponsePackage<ProfileDTO>> GoogleLogin(string accessToken)
+        {
+            var httpClient = new HttpClient();
+            var requestUrl = $"https://www.googleapis.com/oauth2/v3/tokeninfo?id_token={accessToken}";
+
+            try
+            {
+                var response = await httpClient.GetAsync(requestUrl);
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    throw new Exception("Google login verification failed.");
+                }
+                var tokenInfo = await response.Content.ReadFromJsonAsync<GoogleTokenInfo>();
+
+                User u = _uow.User.GetFirstOrDefault(u => u.Email == tokenInfo.Email);
+
+                if (u != null)
+                {
+                    List<Claim> claims = new List<Claim>();
+                    if (u.Role == SD.Roles.Buyer)
+                        claims.Add(new Claim(ClaimTypes.Role, "Buyer"));
+                    if (u.Role == SD.Roles.Seller)
+                        claims.Add(new Claim(ClaimTypes.Role, "Seller"));
+                    if (u.Role == SD.Roles.Admin)
+                        claims.Add(new Claim(ClaimTypes.Role, "Admin"));
+
+                    SymmetricSecurityKey secretKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_secretKey.Value));
+                    var signinCredentials = new SigningCredentials(secretKey, SecurityAlgorithms.HmacSha256);
+                    var tokeOptions = new JwtSecurityToken(
+                        issuer: "http://localhost:5000", //url servera koji je izdao token
+                        claims: claims,
+                        expires: DateTime.Now.AddMinutes(20),
+                        signingCredentials: signinCredentials
+                    );
+                    string tokenString = new JwtSecurityTokenHandler().WriteToken(tokeOptions);
+
+                    ProfileDTO p = _mapper.Map<ProfileDTO>(u);
+                    p.Token = tokenString;
+                    p.Role = u.Role;
+
+                    byte[] imageBytes = System.IO.File.ReadAllBytes(u.ProfileUrl);
+                    p.Avatar = Convert.ToBase64String(imageBytes);
+
+                    return new ResponsePackage<ProfileDTO>(p, ResponseStatus.OK, "Login successful");
+                }
+                else
+                    throw new KeyNotFoundException("This user does not exist");
+
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return new ResponsePackage<ProfileDTO>(null, ResponseStatus.NotFound, ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return new ResponsePackage<ProfileDTO>(null, ResponseStatus.InternalServerError, ex.Message);
+            }
+        }
+
+        private string GetFileExtensionFromContentType(string contentType)
+        {
+            switch (contentType)
+            {
+                case "image/jpeg":
+                    return ".jpg";
+                case "image/png":
+                    return ".png";
+                case "image/gif":
+                    return ".gif";
+                // Add more cases for other supported image formats if needed
+                default:
+                    return ".jpg"; // Default extension if the content type is unknown or not provided
             }
         }
     }

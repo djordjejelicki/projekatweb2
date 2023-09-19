@@ -4,7 +4,7 @@ import Input from "../UI/Input/Input";
 import classes from "./Form.module.css";
 import Modal from "../UI/Modal/Modal";
 import axios from "axios";
-
+import { GoogleLogin } from "@react-oauth/google";
 
 const SigninForm = props => {
 
@@ -100,6 +100,32 @@ const SigninForm = props => {
         }
     };
 
+    const googleSigninHandler = async(response) => {
+        let radio = document.getElementById('accType').value;
+        let selectedOption;
+        if(radio === "Buyer"){
+            selectedOption = 'buyer';
+        }
+        else{
+            selectedOption = 'seller';
+        }
+
+        await axios.post(process.env.REACT_APP_SERVER_URL + "users/googleSignin",
+        JSON.stringify({googleAccessToken:response.credential, role:selectedOption}),
+        {
+            headers: {"Content-Type": "application/json"}
+        }
+        )
+        .then(function(apiResponse) {
+            if(apiResponse.data === true){
+                alert("User successfully registered");
+            }
+        })
+        .catch(function (error){
+            alert(error.response.data.detail);
+        })
+    };
+
     return(
         <Modal onClose={props.onClose} className={classes.form}>
             <center>
@@ -121,8 +147,14 @@ const SigninForm = props => {
                     <Button type='submit' id='signin'>Signin</Button>
                     <Button onClick={props.onClose}>Close</Button>
                 </div>
-
             </form>
+            <center>
+                <div id='accType'>
+                    <input type="radio" value="Buyer" name="accType" defaultChecked /> Buyer
+                    <input type="radio" value="Seller" name="accType" /> Seller
+                </div>
+                <GoogleLogin onSuccess={googleSigninHandler}/>
+            </center>
         </Modal>
     );
 };

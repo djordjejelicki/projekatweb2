@@ -35,6 +35,11 @@ builder.Services.AddAuthentication(opt =>
     opt.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
     opt.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
 })
+.AddGoogle("Google", options => 
+{
+    options.ClientId = "834446938128-d491ro7ugt5tmc9ia3brtlq7i89e61tq.apps.googleusercontent.com";
+    options.ClientSecret = "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";
+})
 .AddJwtBearer(options =>
 {
     options.TokenValidationParameters = new TokenValidationParameters //Podesavamo parametre za validaciju pristiglih tokena

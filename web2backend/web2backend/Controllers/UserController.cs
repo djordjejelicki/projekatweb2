@@ -246,6 +246,46 @@ namespace web2backend.Controllers
                 return Problem(detail: result.Message, statusCode: (int)result.Status);
 
         }
- 
+
+        [HttpPost("googleSignin")] 
+        public async Task<IActionResult> GoogleSignin([FromBody] GoogleSigninToken googleSigninToken)
+        {
+            if (!string.IsNullOrEmpty(googleSigninToken.GoogleAccessToken))
+            {
+                ResponsePackage<bool> response;
+                if (googleSigninToken.Role == "buyer")
+                    response = await _userService.GoogleRegister(googleSigninToken.GoogleAccessToken, SD.Roles.Buyer);
+                else if (googleSigninToken.Role == "seller")
+                    response = await _userService.GoogleRegister(googleSigninToken.GoogleAccessToken, SD.Roles.Seller);
+                else
+                    return BadRequest();
+
+                if (response.Status == ResponseStatus.OK)
+                    return Ok(response.Data);
+                else
+                {
+                    return Problem(response.Message, statusCode: (int)response.Status);
+                }
+            }
+            return BadRequest();
+        }
+
+        [HttpPost("googleLogin")]
+        public async Task<IActionResult> GoogleLogin([FromBody] string googleAccessToken = null)
+        {
+
+            if (!string.IsNullOrEmpty(googleAccessToken))
+            {
+                ResponsePackage<ProfileDTO> response = await _userService.GoogleLogin(googleAccessToken);
+                if (response.Status == ResponseStatus.OK)
+                    return Ok(response.Data);
+                else
+                {
+                    return Problem(response.Message, statusCode: (int)response.Status);
+                }
+            }
+            return BadRequest();
+        }
+
     }
 }

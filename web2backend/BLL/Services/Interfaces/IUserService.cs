@@ -18,5 +18,7 @@ namespace BLL.Services.Interfaces
         Task<ResponsePackage<bool>> DenyUser(VerificationDTO verificationDTO);
         ResponsePackage<List<ProfileDTO>> GetVerified();
         ResponsePackage<bool> RegisterAdmin(UserDTO userDTO);
+        Task<ResponsePackage<bool>> GoogleRegister(string accessToken, SD.Roles Role);
+        Task<ResponsePackage<ProfileDTO>> GoogleLogin(string accessToken);
     }
 }

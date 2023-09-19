@@ -6,6 +6,7 @@ import classes from "./Form.module.css";
 import axios from "axios";
 import User from "../../Models/User";
 import AuthContext from "../../Contexts/auth-context";
+import { GoogleLogin } from "@react-oauth/google";
 
 const emailReducer = (state, action) => {
 
@@ -102,6 +103,27 @@ const LoginForm = props => {
    
     };
 
+    const GoogleLoginHandler = async (response) => {
+        await axios.post(
+        process.env.REACT_APP_SERVER_URL + "users/googleLogin",
+        JSON.stringify(response.credential),
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      )
+      .then(function (apiResponse) {
+        const user = new User(apiResponse.data);
+        authCtx.onLogin(user);
+        props.onClose();
+      })
+      .catch(function (error) {
+        alert(error.response.data.detail);
+      });
+    };
+
+
     return(
         <Modal onClose={props.onClose} className={classes.form}>
             <center>
@@ -114,6 +136,10 @@ const LoginForm = props => {
                     <Button type="submit" id="login">Login</Button>
                     <Button onClick={props.onClose}>Close</Button>
                 </div>
+                <p className={classes["login-title"]}>Google login</p>
+                <center>
+                    <GoogleLogin onSuccess={GoogleLoginHandler}/>
+                </center>
             </form>
         </Modal>
     );
